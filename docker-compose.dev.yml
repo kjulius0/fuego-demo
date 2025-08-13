@@ -24,7 +24,6 @@ services:
         GROUP_ID: ${GROUP_ID:-1000}
     volumes:
       - ./services/web:/app
-      - /app/node_modules  # anonymous volume to preserve node_modules
     ports:
       - "3000:3000"
     environment:
