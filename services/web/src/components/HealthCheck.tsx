@@ -1,10 +1,5 @@
 import { useState } from 'react'
-import axios from 'axios'
-
-interface HealthResponse {
-  status: string
-  time: string
-}
+import { DefaultApi, HealthResponse } from '../client/api'
 
 interface Props {
   baseUrl: string
@@ -21,7 +16,8 @@ export default function HealthCheck({ baseUrl }: Props) {
     setResponse(null)
 
     try {
-      const result = await axios.get<HealthResponse>(`${baseUrl}/health`)
+      const api = new DefaultApi(undefined, baseUrl)
+      const result = await api.gETHealth()
       setResponse(result.data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')

@@ -1,13 +1,5 @@
 import { useState } from 'react'
-import { ApiApi } from '../client/api'
-
-interface AnimalResponse {
-  id: number
-  name: string
-  type: string
-  secret: boolean
-  habitat: string
-}
+import { ApiApi, AnimalRequest, AnimalResponse } from '../client/api'
 
 interface Props {
   baseUrl: string
@@ -28,14 +20,15 @@ export default function AnimalGenerator({ baseUrl }: Props) {
     setResponse(null)
 
     try {
-      const api = new ApiApi()
+      const api = new ApiApi(undefined, baseUrl)
       const secretNumber = parseInt(secret)
       
       if (isNaN(secretNumber)) {
         throw new Error('Secret must be a number')
       }
 
-      const result = await api.pOSTApiAnimal({ secret: secretNumber })
+      const payload: AnimalRequest = { secret: secretNumber }
+      const result = await api.pOSTApiAnimal(payload)
       setResponse(result.data)
     } catch (err) {
       if (err instanceof Error) {

@@ -1,12 +1,5 @@
 import { useState } from 'react'
-import axios from 'axios'
-
-interface UserResponse {
-  id: number
-  name: string
-  email: string
-  join_date: string
-}
+import { ApiApi, UserResponse } from '../client/api'
 
 interface Props {
   baseUrl: string
@@ -27,7 +20,8 @@ export default function UserLookup({ baseUrl }: Props) {
     setResponse(null)
 
     try {
-      const result = await axios.get<UserResponse>(`${baseUrl}/api/user/${userId}`)
+      const api = new ApiApi(undefined, baseUrl)
+      const result = await api.gETApiUserId(userId)
       setResponse(result.data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')

@@ -1,7 +1,21 @@
 version: '3'
 
+vars:
+  USER_ID:
+    sh: id -u
+  GROUP_ID:  
+    sh: id -g
+
 tasks:
-  hello:
+  dev:
+    desc: Start development environment
+    env:
+      USER_ID: '{{.USER_ID}}'
+      GROUP_ID: '{{.GROUP_ID}}'
     cmds:
-      - echo 'Hello World from Task!'
-    silent: true
+      - docker compose -f docker-compose.dev.yml up --build
+
+  stop:
+    desc: Stop development environment
+    cmds:
+      - docker compose -f docker-compose.dev.yml down

@@ -1,18 +1,32 @@
 FROM node:18-alpine
 
-WORKDIR /app
-
 # Install Java (required for OpenAPI Generator)
 RUN apk add --no-cache openjdk17-jre
 
-# Install OpenAPI Generator CLI globally
+# Install OpenAPI Generator CLI globally as root
 RUN npm install -g @openapitools/openapi-generator-cli
 
-# Copy package files
-COPY package*.json ./
+# Accept build args for user ID and group ID
+ARG USER_ID=1000
+ARG GROUP_ID=1000
 
-# Install dependencies
+# Create a user with the same ID as the host user
+RUN addgroup -g $GROUP_ID appgroup || addgroup appgroup && \
+    adduser -D -u $USER_ID -G appgroup appuser
+
+# Create app directory and set permissions
+WORKDIR /app
+RUN chown -R appuser:appgroup /app
+
+# Switch to app user
+USER appuser
+
+# Copy package files and install dependencies
+COPY --chown=appuser:appgroup package*.json ./
 RUN npm install
+
+# Create client directory structure for OpenAPI generator
+RUN mkdir -p src/client/docs
 
 # Expose port
 EXPOSE 3000

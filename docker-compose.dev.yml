@@ -19,9 +19,13 @@ services:
     build:
       context: ./services/web
       dockerfile: Dockerfile.dev
+      args:
+        USER_ID: ${USER_ID:-1000}
+        GROUP_ID: ${GROUP_ID:-1000}
     volumes:
       - ./services/web:/app
       - /app/node_modules  # anonymous volume to preserve node_modules
+      - /app/src/client    # anonymous volume to let container manage generated client
     ports:
       - "3000:3000"
     environment:

@@ -1,14 +1,5 @@
 import { useState } from 'react'
-import axios from 'axios'
-
-interface GreetingInput {
-  name: string
-}
-
-interface GreetingResponse {
-  message: string
-  timestamp: string
-}
+import { ApiApi, GreetingInput, GreetingResponse } from '../client/api'
 
 interface Props {
   baseUrl: string
@@ -29,8 +20,9 @@ export default function GreetingForm({ baseUrl }: Props) {
     setResponse(null)
 
     try {
+      const api = new ApiApi(undefined, baseUrl)
       const payload: GreetingInput = { name: name.trim() }
-      const result = await axios.post<GreetingResponse>(`${baseUrl}/api/greeting`, payload)
+      const result = await api.pOSTApiGreeting(payload)
       setResponse(result.data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
@@ -58,7 +50,7 @@ export default function GreetingForm({ baseUrl }: Props) {
           {loading ? 'Sending...' : 'Send Greeting'}
         </button>
       </form>
-      
+
       {loading && <div className="loading">Sending greeting...</div>}
       {error && <div className="error">Error: {error}</div>}
       {response && (
