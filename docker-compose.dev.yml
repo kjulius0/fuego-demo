@@ -25,7 +25,6 @@ services:
     volumes:
       - ./services/web:/app
       - /app/node_modules  # anonymous volume to preserve node_modules
-      - /app/src/client    # anonymous volume to let container manage generated client
     ports:
       - "3000:3000"
     environment:
