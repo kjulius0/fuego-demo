@@ -31,7 +31,7 @@ This project demonstrates a Go API built with Fuego framework and a React fronte
 
 ```bash
 # Start both services with hot reload
-docker-compose -f docker-compose.dev.yml up --build
+task dev
 ```
 
 This will start:
@@ -44,7 +44,6 @@ The TypeScript client is **automatically generated** when the API changes:
 
 - Frontend continuously polls the Go API's OpenAPI spec
 - When schema changes are detected, the client regenerates automatically
-- No manual intervention needed - just change your Go code!
 
 **Manual generation** (if needed):
 ```bash
