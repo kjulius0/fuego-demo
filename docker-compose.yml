@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./services/api-server
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    environment:
+      - GO_ENV=production
+    networks:
+      - fuego-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./services/web
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - fuego-network
+    restart: unless-stopped
+
+networks:
+  fuego-network:
+    driver: bridge

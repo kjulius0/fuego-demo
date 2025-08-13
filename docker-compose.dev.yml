@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./services/api-server
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./services/api-server:/app
+      - go_modules:/go/pkg/mod
+    ports:
+      - "8888:8888"
+    environment:
+      - GO_ENV=development
+    networks:
+      - fuego-network
+
+  frontend:
+    build:
+      context: ./services/web
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./services/web:/app
+      - /app/node_modules  # anonymous volume to preserve node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_BASE_URL=http://localhost:8888
+      - JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+      - PATH=/usr/bin:/bin:/usr/local/bin:/node_modules/.bin:$PATH
+    depends_on:
+      - backend
+    networks:
+      - fuego-network
+
+volumes:
+  go_modules:
+
+networks:
+  fuego-network:
+    driver: bridge

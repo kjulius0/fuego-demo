@@ -1,0 +1,21 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install Java (required for OpenAPI Generator)
+RUN apk add --no-cache openjdk17-jre
+
+# Install OpenAPI Generator CLI globally
+RUN npm install -g @openapitools/openapi-generator-cli
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Expose port
+EXPOSE 3000
+
+# Start development server
+CMD ["npm", "run", "dev"]
