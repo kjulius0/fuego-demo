@@ -10,22 +10,23 @@ RUN npm install -g @openapitools/openapi-generator-cli
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-# Create a user with the same ID as the host user, handling existing IDs
-RUN (addgroup -g $GROUP_ID appgroup || addgroup appgroup) && \
-    (adduser -D -u $USER_ID -G appgroup appuser || adduser -D -G appgroup appuser)
+# Modify existing node user to match host user ID
+RUN deluser node && \
+    addgroup -g $GROUP_ID node && \
+    adduser -D -u $USER_ID -G node node
 
 # Create app directory and set permissions
 WORKDIR /app
-RUN chown -R appuser:appgroup /app
+RUN chown -R node:node /app
 
-# Switch to app user
-USER appuser
+# Switch to node user
+USER node
 
 # Copy package files and install dependencies
-COPY --chown=appuser:appgroup package*.json ./
+COPY --chown=node:node package*.json ./
 RUN npm install
 
-# Create client directory structure for OpenAPI generator
+# Create client directory structure
 RUN mkdir -p src/client/docs
 
 # Expose port
