@@ -12,7 +12,7 @@ ARG GROUP_ID=1000
 
 # Modify existing node user to match host user ID
 RUN deluser node && \
-    addgroup -g $GROUP_ID node && \
+    (addgroup -g $GROUP_ID node || addgroup node) && \
     adduser -D -u $USER_ID -G node node
 
 # Create app directory and set permissions
