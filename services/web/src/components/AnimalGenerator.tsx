@@ -1,44 +1,23 @@
 import { useState } from 'react'
-import { ApiApi, AnimalRequest, AnimalResponse } from '../client/api'
+import { usePOSTApiAnimal, AnimalRequest } from '../client/openAPI'
 
-interface Props {
-  baseUrl: string
-}
-
-export default function AnimalGenerator({ baseUrl }: Props) {
+export default function AnimalGenerator() {
   const [secret, setSecret] = useState('22')
-  const [loading, setLoading] = useState(false)
-  const [response, setResponse] = useState<AnimalResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  
+  const animal = usePOSTApiAnimal()
 
   const generateAnimal = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!secret.trim()) return
 
-    setLoading(true)
-    setError(null)
-    setResponse(null)
-
-    try {
-      const api = new ApiApi(undefined, baseUrl)
-      const secretNumber = parseInt(secret)
-      
-      if (isNaN(secretNumber)) {
-        throw new Error('Secret must be a number')
-      }
-
-      const payload: AnimalRequest = { secret: secretNumber }
-      const result = await api.pOSTApiAnimal(payload)
-      setResponse(result.data)
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('Unknown error occurred')
-      }
-    } finally {
-      setLoading(false)
+    const secretNumber = parseInt(secret)
+    
+    if (isNaN(secretNumber)) {
+      return
     }
+
+    const payload: AnimalRequest = { secret: secretNumber }
+    animal.mutate({ data: payload })
   }
 
   return (
@@ -57,20 +36,20 @@ export default function AnimalGenerator({ baseUrl }: Props) {
             required
           />
         </div>
-        <button type="submit" disabled={loading || !secret.trim()}>
-          {loading ? 'Generating...' : 'Generate Animal'}
+        <button type="submit" disabled={animal.isPending || !secret.trim()}>
+          {animal.isPending ? 'Generating...' : 'Generate Animal'}
         </button>
       </form>
       
-      {loading && <div className="loading">Generating random animal...</div>}
-      {error && <div className="error">Error: {error}</div>}
-      {response && (
+      {animal.isPending && <div className="loading">Generating random animal...</div>}
+      {animal.error && <div className="error">Error: {animal.error.message}</div>}
+      {animal.data && (
         <div className="response">
-          {response.secret ? (
+          {animal.data.data.secret ? (
             <div>
               <strong>🎉 Success!</strong><br/>
-              Animal #{response.id}: <strong>{response.name}</strong> the {response.type}<br/>
-              <em>Habitat: {response.habitat}</em>
+              Animal #{animal.data.data.id}: <strong>{animal.data.data.name}</strong> the {animal.data.data.type}<br/>
+              <em>Habitat: {animal.data.data.habitat}</em>
             </div>
           ) : (
             <div>

@@ -8,9 +8,13 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3gen"
 	"github.com/go-fuego/fuego"
 	"github.com/rs/cors"
 	"gopkg.in/yaml.v3"
@@ -51,7 +55,32 @@ type AnimalResponse struct {
 	Name    string `json:"name" description:"Animal name"`
 	Type    string `json:"type" description:"Animal type"`
 	Secret  bool   `json:"secret" description:"Whether secret was correct"`
-	Habitat string `json:"habitat" description:"Animal habitat"`
+	Habitat string `json:"habitat" validate:"oneof=Savanna Grassland Forest Arctic Ocean Meadow Jungle Mountain" description:"Animal habitat"`
+}
+
+// enumCustomizer converts oneof validate tags to OpenAPI enums
+var enumCustomizer openapi3gen.SchemaCustomizerFn = func(name string, t reflect.Type, tag reflect.StructTag, schema *openapi3.Schema) error {
+	validateTag := tag.Get("validate")
+	if validateTag == "" {
+		return nil
+	}
+
+	parts := strings.SplitSeq(validateTag, ",")
+	for part := range parts {
+		part = strings.TrimSpace(part)
+		if enumString, ok := strings.CutPrefix(part, "oneof="); ok {
+			// Extract enum values from oneof=value1 value2 value3
+			enumValues := strings.Fields(enumString)
+
+			// Convert string values to any for OpenAPI schema
+			schema.Enum = make([]any, len(enumValues))
+			for i, value := range enumValues {
+				schema.Enum[i] = value
+			}
+			break
+		}
+	}
+	return nil
 }
 
 func authMiddleware(next http.Handler) http.Handler {
@@ -149,7 +178,7 @@ func animalHandler(c fuego.ContextWithBody[AnimalRequest]) (AnimalResponse, erro
 	// Generate random animal from list
 	animalIndex := rand.Intn(len(animals))
 	animal := animals[animalIndex]
-	
+
 	return AnimalResponse{
 		ID:      animalIndex + 1,
 		Name:    animal.name,
@@ -170,6 +199,11 @@ func createServer() *fuego.Server {
 
 	s := fuego.NewServer(
 		fuego.WithGlobalMiddlewares(corsOptions.Handler),
+		fuego.WithEngineOptions(
+			fuego.WithOpenAPIGeneratorSchemaCustomizer(
+				enumCustomizer,
+			),
+		),
 	)
 
 	fuego.Get(s, "/health", healthHandler,
@@ -237,7 +271,7 @@ func generateOpenAPISpec(format string) {
 
 	var data []byte
 	var err error
-	
+
 	switch format {
 	case "json":
 		data, err = json.MarshalIndent(spec, "", "  ")
@@ -246,7 +280,7 @@ func generateOpenAPISpec(format string) {
 	default:
 		log.Fatalf("Unsupported format: %s. Use 'yaml' or 'json'", format)
 	}
-	
+
 	if err != nil {
 		log.Fatalf("Failed to marshal OpenAPI spec: %v", err)
 	}

@@ -1,33 +1,25 @@
 import { useState } from 'react'
-import { ApiApi, UserResponse } from '../client/api'
+import { useGETApiUserId } from '../client/openAPI'
 
-interface Props {
-  baseUrl: string
-}
-
-export default function UserLookup({ baseUrl }: Props) {
+export default function UserLookup() {
   const [userId, setUserId] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [response, setResponse] = useState<UserResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [shouldFetch, setShouldFetch] = useState(false)
+  
+  const { data, error, isLoading, refetch } = useGETApiUserId(
+    userId, 
+    { 
+      query: { 
+        enabled: shouldFetch && !!userId.trim() 
+      }
+    }
+  )
 
   const lookupUser = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!userId.trim()) return
-
-    setLoading(true)
-    setError(null)
-    setResponse(null)
-
-    try {
-      const api = new ApiApi(undefined, baseUrl)
-      const result = await api.gETApiUserId(userId)
-      setResponse(result.data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setLoading(false)
-    }
+    
+    setShouldFetch(true)
+    refetch()
   }
 
   return (
@@ -46,16 +38,16 @@ export default function UserLookup({ baseUrl }: Props) {
             required
           />
         </div>
-        <button type="submit" disabled={loading || !userId.trim()}>
-          {loading ? 'Looking up...' : 'Lookup User'}
+        <button type="submit" disabled={isLoading || !userId.trim()}>
+          {isLoading ? 'Looking up...' : 'Lookup User'}
         </button>
       </form>
       
-      {loading && <div className="loading">Looking up user...</div>}
-      {error && <div className="error">Error: {error}</div>}
-      {response && (
+      {isLoading && <div className="loading">Looking up user...</div>}
+      {error && <div className="error">Error: {error.message}</div>}
+      {data && (
         <div className="response">
-          {JSON.stringify(response, null, 2)}
+          {JSON.stringify(data.data, null, 2)}
         </div>
       )}
     </div>

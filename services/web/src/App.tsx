@@ -12,10 +12,10 @@ function App() {
       <h1>Fuego API Client</h1>
       <p>API Base URL: <code>{apiBaseUrl}</code></p>
       
-      <HealthCheck baseUrl={apiBaseUrl} />
-      <GreetingForm baseUrl={apiBaseUrl} />
-      <UserLookup baseUrl={apiBaseUrl} />
-      <AnimalGenerator baseUrl={apiBaseUrl} />
+      <HealthCheck />
+      <GreetingForm />
+      <UserLookup />
+      <AnimalGenerator />
     </div>
   )
 }
