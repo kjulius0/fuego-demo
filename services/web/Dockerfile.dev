@@ -37,4 +37,4 @@ RUN mkdir -p src/client/docs
 EXPOSE 3000
 
 # Start development server
-CMD ["sleep", "500"]
+CMD ["npm", "run", "dev"]

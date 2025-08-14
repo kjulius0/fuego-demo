@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"node watch-api.js\" \"vite\"",
+    "dev": "npx concurrently \"node watch-api.js\" \"vite\"",
     "dev-manual": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
